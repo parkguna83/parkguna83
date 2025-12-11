@@ -1,0 +1,310 @@
+/* 부동산 경매 AI 분석 리포트 스타일 - Nano Banana Style (Modern Premium) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+:root {
+    /* Primary Colors */
+    --primary-color: #2563eb;
+    /* Soft Royal Blue */
+    --primary-light: #eff6ff;
+    --primary-dark: #1e40af;
+    --accent-color: #fca5a5;
+    /* Soft Red Accent */
+
+    /* Text Colors */
+    --text-main: #1e293b;
+    /* Slate 800 */
+    --text-sub: #64748b;
+    /* Slate 500 */
+    --text-light: #94a3b8;
+
+    /* Backgrounds */
+    --bg-page: #f8fafc;
+    /* Slate 50 */
+    --bg-card: #ffffff;
+    --bg-input: #f1f5f9;
+
+    /* Effects */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+    --backdrop-blur: blur(12px);
+}
+
+body {
+    background-color: var(--bg-page);
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    color: var(--text-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* PDF 변환 시 적용될 스타일 */
+@media print {
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background-color: #fff;
+    }
+
+    #pdf-export-area {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 20px !important;
+    }
+}
+
+/* 리포트 컨테이너 */
+#pdf-export-area {
+    background-color: var(--bg-card);
+    padding: 50px;
+    max-width: 210mm;
+    margin: 40px auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glassmorphism Decoration */
+#pdf-export-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, var(--primary-color), #60a5fa);
+}
+
+/* 헤더 스타일 */
+.report-header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.report-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-main);
+    margin: 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(to right, #1e293b, #334155);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.report-subtitle {
+    font-size: 1rem;
+    color: var(--text-sub);
+    margin-top: 8px;
+    font-weight: 400;
+}
+
+/* 등급 요약 박스 */
+.grade-summary-box {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: var(--backdrop-blur);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 40px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+}
+
+.grade-badge-lg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 30px;
+    border-radius: 50px;
+    color: white;
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* 등급별 배경색 (Modern Palette) */
+.bg-grade-S {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+
+.bg-grade-A {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.bg-grade-B {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white !important;
+}
+
+.bg-grade-C {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.bg-grade-F {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* 그리드 레이아웃 */
+.report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+/* 섹션 스타일 */
+.report-section {
+    margin-bottom: 40px;
+}
+
+.report-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.report-section-title i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    background: var(--primary-light);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+/* 데이터 테이블 (Modern Clean) */
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.95rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px, 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.data-table th {
+    text-align: left;
+    color: var(--text-sub);
+    font-weight: 500;
+    width: 45%;
+}
+
+.data-table td {
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.data-table tr:last-child th,
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table .total-row th,
+.data-table .total-row td {
+    border-top: 2px solid var(--text-main);
+    border-bottom: none;
+    font-weight: 800;
+    font-size: 1.05rem;
+    padding-top: 20px;
+    color: var(--text-main);
+}
+
+/* 차트 컨테이너 (Card Effect) */
+.chart-container,
+canvas {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 10px;
+}
+
+/* Input Styles Overwrite for Report Area inputs if any */
+input,
+select,
+textarea {
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* Main UI Overrides (Navbar, Card, etc. in standalone.html will inherit font) */
+.navbar {
+    background: linear-gradient(90deg, #1e293b, #0f172a) !important;
+    box-shadow: var(--shadow-md);
+}
+
+.card {
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-md) !important;
+    background: var(--bg-card) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-header {
+    background-color: white !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 20px !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+}
+
+.card-header h5 {
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2) !important;
+    transition: all 0.2s !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(37, 99, 235, 0.3) !important;
+}
+
+.form-control,
+.form-select {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid #e2e8f0 !important;
+    background-color: var(--bg-input) !important;
+    padding: 10px 12px !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color) !important;
+    background-color: white !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
