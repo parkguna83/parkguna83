@@ -43,7 +43,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // 분석 실행
     form.addEventListener('submit', function (e) {
         e.preventDefault();
-        runAnalysis();
+
+        // Loader Start
+        const loader = document.getElementById('loading-overlay');
+        if (loader) {
+            loader.style.display = 'flex';
+            setTimeout(() => {
+                runAnalysis();
+                loader.style.display = 'none';
+
+                // Result Scroll
+                const res = document.getElementById('result-section');
+                if (res && res.style.display !== 'none') {
+                    res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 800); // 0.8s fake delay
+        } else {
+            runAnalysis();
+        }
     });
 
     // 파일 불러오기 이벤트

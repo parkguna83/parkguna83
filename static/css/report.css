@@ -1,223 +1,196 @@
-/* 부동산 경매 AI 분석 리포트 스타일 - Nano Banana Style (Modern Premium) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+/* 부동산 경매 AI 분석 리포트 스타일 - Apple Clean Aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
 
 :root {
-    /* Primary Colors */
-    --primary-color: #2563eb;
-    /* Soft Royal Blue */
-    --primary-light: #eff6ff;
-    --primary-dark: #1e40af;
-    --accent-color: #fca5a5;
-    /* Soft Red Accent */
-
-    /* Text Colors */
-    --text-main: #1e293b;
-    /* Slate 800 */
-    --text-sub: #64748b;
-    /* Slate 500 */
-    --text-light: #94a3b8;
-
-    /* Backgrounds */
-    --bg-page: #f8fafc;
-    /* Slate 50 */
+    /* Apple Palette */
+    --primary-color: #0071e3;
+    /* Classic Apple Blue */
+    --text-main: #1d1d1f;
+    /* Almost Black */
+    --text-sub: #86868b;
+    /* Apple Gray */
+    --bg-page: #fbfbfd;
+    /* Apple Off-White */
     --bg-card: #ffffff;
-    --bg-input: #f1f5f9;
+    --border-color: #d2d2d7;
 
-    /* Effects */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --success-color: #34c759;
+    --warning-color: #ff9f0a;
+    --danger-color: #ff3b30;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
+
+    --radius-xl: 20px;
     --radius-lg: 16px;
     --radius-md: 12px;
-    --radius-sm: 8px;
-
-    /* Glassmorphism */
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.5);
-    --backdrop-blur: blur(12px);
 }
 
 body {
     background-color: var(--bg-page);
-    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Noto Sans KR', sans-serif;
+    /* System font first for Apple feel */
     color: var(--text-main);
-    line-height: 1.6;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
 
-/* PDF 변환 시 적용될 스타일 */
-@media print {
-    body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        background-color: #fff;
-    }
-
-    #pdf-export-area {
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 20px !important;
-    }
-}
-
-/* 리포트 컨테이너 */
-#pdf-export-area {
-    background-color: var(--bg-card);
-    padding: 50px;
-    max-width: 210mm;
-    margin: 40px auto;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Glassmorphism Decoration */
-#pdf-export-area::before {
-    content: '';
-    position: absolute;
+/* Navbar */
+.navbar {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: none !important;
+    position: sticky;
     top: 0;
-    left: 0;
-    width: 100%;
-    height: 6px;
-    background: linear-gradient(90deg, var(--primary-color), #60a5fa);
+    z-index: 1000;
 }
 
-/* 헤더 스타일 */
-.report-header {
-    text-align: center;
-    margin-bottom: 50px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.report-title {
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--text-main);
-    margin: 0;
+.navbar-brand {
+    font-weight: 600;
+    color: var(--text-main) !important;
+    font-size: 1.2rem;
     letter-spacing: -0.02em;
-    background: linear-gradient(to right, #1e293b, #334155);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
-.report-subtitle {
-    font-size: 1rem;
-    color: var(--text-sub);
-    margin-top: 8px;
-    font-weight: 400;
-}
-
-/* 등급 요약 박스 */
-.grade-summary-box {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: var(--backdrop-blur);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 20px;
+/* Card - Bento Style */
+.card {
+    background: var(--bg-card) !important;
+    border: none !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-card) !important;
     padding: 30px;
-    text-align: center;
-    margin-bottom: 40px;
-    box-shadow: var(--shadow-md);
-    position: relative;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.grade-badge-lg {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 30px;
-    border-radius: 50px;
-    color: white;
-    font-weight: 800;
-    font-size: 1.4rem;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover) !important;
 }
 
-/* 등급별 배경색 (Modern Palette) */
-.bg-grade-S {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+.card-header {
+    background: transparent !important;
+    border-bottom: none !important;
+    padding: 0 0 20px 0 !important;
 }
 
-.bg-grade-A {
-    background: linear-gradient(135deg, #10b981, #059669);
+.card-header h5 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
 }
 
-.bg-grade-B {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white !important;
+/* Input Forms */
+.form-control,
+.form-select {
+    background-color: #f5f5f7 !important;
+    /* Light Gray Input */
+    border: 1px solid transparent !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 14px !important;
+    font-size: 1rem !important;
+    color: var(--text-main);
+    transition: all 0.2s ease;
 }
 
-.bg-grade-C {
-    background: linear-gradient(135deg, #f97316, #ea580c);
+.form-control:focus,
+.form-select:focus {
+    background-color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+    /* Blue Focus */
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1) !important;
 }
 
-.bg-grade-F {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    background-image: none !important;
+    /* No gradients */
+    border-radius: 980px !important;
+    /* Pill shape */
+    padding: 10px 24px !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-/* 그리드 레이아웃 */
+.btn-primary:hover {
+    background-color: #0077ed !important;
+    /* Slightly lighter blue */
+}
+
+/* Report Layout: Bento Grid Restoration */
 .report-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 40px;
+    gap: 24px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
-/* 섹션 스타일 */
+@media (max-width: 768px) {
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Report Sections */
 .report-section {
-    margin-bottom: 40px;
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.report-section:hover {
+    box-shadow: var(--shadow-hover);
 }
 
 .report-section-title {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--text-main);
     margin-bottom: 20px;
+    color: var(--text-main);
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f1f5f9;
+    gap: 8px;
+    letter-spacing: -0.01em;
 }
 
 .report-section-title i {
     color: var(--primary-color);
-    font-size: 1.2rem;
-    background: var(--primary-light);
-    padding: 8px;
-    border-radius: 8px;
+    font-size: 1.1em;
 }
 
-/* 데이터 테이블 (Modern Clean) */
+/* Tables - Minimalist */
 .data-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 0.95rem;
-}
-
-.data-table th,
-.data-table td {
-    padding: 12px, 0;
-    border-bottom: 1px solid #f1f5f9;
 }
 
 .data-table th {
-    text-align: left;
     color: var(--text-sub);
     font-weight: 500;
-    width: 45%;
+    padding: 12px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .data-table td {
-    text-align: right;
-    font-weight: 600;
     color: var(--text-main);
+    font-weight: 600;
+    text-align: right;
+    padding: 12px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+    font-feature-settings: "tnum";
+    /* Tabular numbers */
 }
 
 .data-table tr:last-child th,
@@ -227,84 +200,114 @@ body {
 
 .data-table .total-row th,
 .data-table .total-row td {
-    border-top: 2px solid var(--text-main);
-    border-bottom: none;
-    font-weight: 800;
-    font-size: 1.05rem;
-    padding-top: 20px;
+    border-top: 1px solid #d2d2d7;
+    font-weight: 700;
+    font-size: 1.1rem;
     color: var(--text-main);
+    padding-top: 16px;
 }
 
-/* 차트 컨테이너 (Card Effect) */
-.chart-container,
-canvas {
+/* Grade Badge - Fixed for Visibility */
+.grade-summary-box {
+    text-align: center;
+    padding: 60px 20px;
     background: var(--bg-card);
-    border-radius: var(--radius-md);
-    padding: 10px;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
 }
 
-/* Input Styles Overwrite for Report Area inputs if any */
-input,
-select,
-textarea {
-    font-family: 'Noto Sans KR', sans-serif;
-}
-
-/* Main UI Overrides (Navbar, Card, etc. in standalone.html will inherit font) */
-.navbar {
-    background: linear-gradient(90deg, #1e293b, #0f172a) !important;
-    box-shadow: var(--shadow-md);
-}
-
-.card {
-    border: none !important;
-    border-radius: var(--radius-lg) !important;
-    box-shadow: var(--shadow-md) !important;
-    background: var(--bg-card) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-header {
-    background-color: white !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    padding: 20px !important;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-}
-
-.card-header h5 {
+.grade-badge-lg {
+    font-size: 3rem;
     font-weight: 800;
+    letter-spacing: -0.03em;
+    padding: 0;
+    margin: 10px 0;
+    /* Reset Gradient - Use Solid Color */
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
     color: var(--text-main);
-    margin: 0;
+    display: inline-block;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
-    border: none !important;
-    border-radius: var(--radius-sm) !important;
-    font-weight: 600 !important;
-    padding: 12px 20px !important;
-    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2) !important;
-    transition: all 0.2s !important;
+/* Dynamic Grade Colors (Solid Text Color) */
+.bg-grade-S {
+    color: #ff3b30 !important;
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(37, 99, 235, 0.3) !important;
+.bg-grade-A {
+    color: #0071e3 !important;
 }
 
-.form-control,
-.form-select {
-    border-radius: var(--radius-sm) !important;
-    border: 1px solid #e2e8f0 !important;
-    background-color: var(--bg-input) !important;
-    padding: 10px 12px !important;
-    font-size: 0.95rem !important;
-    transition: all 0.2s;
+.bg-grade-B {
+    color: #ff9f0a !important;
 }
 
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--primary-color) !important;
-    background-color: white !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+.bg-grade-C {
+    color: #86868b !important;
+}
+
+.bg-grade-F {
+    color: #636366 !important;
+}
+
+/* Report Title */
+.report-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.report-subtitle {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--text-sub);
+    font-weight: 400;
+    margin-bottom: 40px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#result-section {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Loading Overlay */
+#loading-overlay {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* PDF print fixes */
+@media print {
+    body {
+        background-color: white !important;
+    }
+
+    .report-section {
+        box-shadow: none !important;
+        border: 1px solid #eee;
+    }
+
+    .card {
+        box-shadow: none !important;
+    }
+}
+
+/* Canvas - Graph Styling */
+canvas {
+    margin-top: 10px;
 }
