@@ -8,9 +8,9 @@ import iconDocs from '../assets/icon-docs.png';
 const AppGrid = () => {
     const navigate = useNavigate();
     const apps = [
-        { title: 'Real Estate Calculator', color: 'rgba(192, 132, 252, 0.4)', icon: iconChat, path: '/app/01. property cal/index.html', isExternal: true },
-        { title: 'Lotto Analyzer', color: 'rgba(74, 222, 128, 0.4)', icon: iconImage, path: '/app/02. Lotto Number choice/index.html', isExternal: true },
-        { title: 'Code Studio', color: 'rgba(56, 189, 248, 0.4)', icon: iconCode, path: null, isComingSoon: true },
+        { title: 'Real Estate Calculator', color: 'rgba(192, 132, 252, 0.4)', icon: iconChat, path: `${import.meta.env.BASE_URL}app/01. property cal/index.html`, isExternal: true },
+        { title: 'Lotto Analyzer', color: 'rgba(74, 222, 128, 0.4)', icon: iconImage, path: `${import.meta.env.BASE_URL}app/02. Lotto Number choice/index.html`, isExternal: true },
+        { title: 'Car Auction Search', color: 'rgba(56, 189, 248, 0.4)', icon: iconCode, path: `${import.meta.env.BASE_URL}app/03. car search/index.html`, isExternal: true },
         { title: 'Documents', color: 'rgba(45, 212, 191, 0.4)', icon: iconDocs, path: null, isComingSoon: true },
     ];
 

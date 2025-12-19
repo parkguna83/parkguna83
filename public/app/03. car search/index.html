@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>법원 자동차 경매 검색 (AI Search)</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ParkG's Workspace Theme Integration */
+        :root {
+            --font-main: 'Outfit', sans-serif;
+            --bg-dark: #0f172a;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.1);
+            --glass-blur: 20px;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --radius-lg: 24px;
+            --accent-blue: #38bdf8;
+        }
+
+        body {
+            font-family: var(--font-main), system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: rgba(15, 23, 42, 0.8) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: var(--text-primary) !important;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Inputs */
+        .form-control,
+        .form-select {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: #ffffff !important;
+            border-radius: 12px;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border-color: var(--accent-blue) !important;
+            box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25) !important;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Buttons */
+        .btn-search {
+            background: linear-gradient(to right, #3b82f6, #06b6d4);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            color: white;
+        }
+
+        .btn-outline-glass {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-glass:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Table */
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--glass-border);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--glass-border);
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Floating Action Buttons */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 9999;
+        }
+
+        .fab-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+        }
+
+        .fab-btn:hover {
+            transform: scale(1.1);
+            background: var(--bg-dark);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* Loading */
+        .spinner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+            border-radius: var(--radius-lg);
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center gap-3">
+                <a href="/parkguna83/" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="bi bi-house-fill"></i> Home
+                </a>
+                <a class="navbar-brand mb-0 h1" href="#"><i class="bi bi-car-front-fill"></i> 법원 자동차 경매</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div class="row">
+            <!-- Sidebar: Search Conditions -->
+            <div class="col-lg-4 mb-4">
+                <div class="glass-card position-relative">
+                    <h5 class="mb-3"><i class="bi bi-funnel"></i> 검색 조건</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">검색어 (포함)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchKeyword" value="자동차">
+                            <button class="btn btn-outline-secondary" type="button"
+                                onclick="setKeyword('자동차')">AI추천</button>
+                        </div>
+                        <div class="mt-2 d-flex gap-2 flex-wrap">
+                            <span class="badge bg-secondary cursor-pointer" onclick="setKeyword('자동차')"
+                                style="cursor:pointer">자동차</span>
+                            <span class="badge bg-secondary cursor-pointer" onclick="setKeyword('트럭')"
+                                style="cursor:pointer">트럭</span>
+                            <span class="badge bg-secondary cursor-pointer" onclick="setKeyword('중장비')"
+                                style="cursor:pointer">중장비</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small">제외어 (쉼표로 구분)</label>
+                        <input type="text" class="form-control" id="excludeKeyword" placeholder="예: 지분,사고,침수">
+                        <div class="mt-2 text-end">
+                            <small class="text-muted cursor-pointer" onclick="setExclude('지분,폐차,침수')"
+                                style="cursor:pointer; text-decoration:underline;">[기본 필터 적용]</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="btnSearch" class="btn btn-search" onclick="startSearch()">
+                            <i class="bi bi-search"></i> 검색 시작
+                        </button>
+                        <button id="btnStop" class="btn btn-danger" onclick="stopSearch()" disabled>
+                            <i class="bi bi-stop-circle"></i> 중지
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h5 class="mb-3"><i class="bi bi-download"></i> 결과 저장</h5>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <button class="btn btn-outline-glass flex-fill" onclick="exportTXT()">
+                            <i class="bi bi-file-text"></i> TXT 저장
+                        </button>
+                        <button class="btn btn-outline-glass flex-fill" onclick="exportCSV()">
+                            <i class="bi bi-file-earmark-excel"></i> CSV 저장
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main: Results -->
+            <div class="col-lg-8">
+                <div class="glass-card position-relative" style="min-height: 500px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="m-0"><i class="bi bi-list-check"></i> 검색 결과 <span id="resultCount"
+                                class="badge bg-primary rounded-pill ms-2">0건</span></h5>
+                        <button class="btn btn-sm btn-outline-danger" onclick="clearResults()">
+                            <i class="bi bi-trash"></i> 초기화
+                        </button>
+                    </div>
+
+                    <div id="loadingOverlay" class="spinner-overlay" style="display: none;">
+                        <div class="text-center">
+                            <div class="spinner-border text-info" role="status"></div>
+                            <div class="mt-2 fw-bold">대법원 데이터 조회 중...</div>
+                            <small class="text-muted d-block mt-1">응답이 느릴 수 있습니다.</small>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">No</th>
+                                    <th>법원/기관</th>
+                                    <th>제목/내용</th>
+                                    <th style="width: 80px;">링크</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultBody">
+                                <!-- Data Rows -->
+                                <tr id="emptyRow">
+                                    <td colspan="4" class="text-center py-5 text-secondary">
+                                        <i class="bi bi-search display-4 d-block mb-3" style="opacity: 0.3;"></i>
+                                        검색 조건을 입력하고 '검색 시작'을 눌러주세요.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <a href="/parkguna83/" class="fab-btn" title="홈으로">
+            <i class="bi bi-house-fill"></i>
+        </a>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isRunning = false;
+        let results = [];
+        let abortController = null;
+
+        function setKeyword(val) { document.getElementById('searchKeyword').value = val; }
+        function setExclude(val) { document.getElementById('excludeKeyword').value = val; }
+        function clearResults() {
+            results = [];
+            document.getElementById('resultBody').innerHTML = `
+                <tr id="emptyRow">
+                    <td colspan="4" class="text-center py-5 text-secondary">
+                        <i class="bi bi-search display-4 d-block mb-3" style="opacity: 0.3;"></i>
+                        검색 결과가 초기화되었습니다.
+                    </td>
+                </tr>
+            `;
+            document.getElementById('resultCount').innerText = '0건';
+        }
+
+        async function startSearch() {
+            const keyword = document.getElementById('searchKeyword').value.trim();
+            if (!keyword) { alert('검색어를 입력해주세요.'); return; }
+
+            isRunning = true;
+            document.getElementById('btnSearch').disabled = true;
+            document.getElementById('btnStop').disabled = false;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            // Clear previous if simple search
+            if (results.length > 0 && confirm('새로운 검색을 위해 기존 결과를 지우시겠습니까?')) {
+                clearResults();
+            }
+
+            try {
+                // NOTE: Real scraping from client-side is hard.
+                // We will try to fetch the RSS or Search Page via Proxy.
+                // However, scourt.go.kr is tough. 
+                // IF fetch fails, we provide a fallback link.
+
+                // Using AllOrigins as it handles some binary/text issues better
+                const targetUrl = `https://www.scourt.go.kr/portal/notice/realestate/RealNoticeList.work?searchWord=${encodeURIComponent(keyword)}`;
+                // Creating a chain of proxies
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+                abortController = new AbortController();
+                const timeoutId = setTimeout(() => abortController.abort(), 15000); // 15s timeout
+
+                const response = await fetch(proxyUrl, { signal: abortController.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
+
+                const htmlText = await response.text();
+                parseAndDisplay(htmlText, keyword);
+
+            } catch (error) {
+                console.error(error);
+                let msg = '데이터를 불러오는데 실패했습니다.';
+                if (error.name === 'AbortError') msg = '요청 시간이 초과되었습니다.';
+
+                // Fallback UI
+                const resultBody = document.getElementById('resultBody');
+                if (resultBody.querySelector('#emptyRow')) resultBody.innerHTML = '';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="4" class="text-center py-4 text-danger">
+                        <i class="bi bi-exclamation-triangle mb-2 d-block text-warning" style="font-size: 2rem;"></i>
+                        <strong>보안 정책으로 인해 직접 데이터를 가져올 수 없습니다.</strong><br>
+                        <small class="text-muted">${error.message}</small><br><br>
+                        <a href="https://www.scourt.go.kr/portal/notice/realestate/RealNoticeList.work" target="_blank" class="btn btn-primary btn-sm">
+                            <i class="bi bi-box-arrow-up-right"></i> 대법원 사이트 직접 열기
+                        </a>
+                    </td>
+                `;
+                resultBody.prepend(tr);
+            } finally {
+                stopSearch();
+            }
+        }
+
+        function stopSearch() {
+            isRunning = false;
+            if (abortController) abortController.abort();
+            document.getElementById('btnSearch').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function parseAndDisplay(html, keyword) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // Scourt logic implies table rows. 
+            // This selector is a guess based on standard structure; strict selectors might break if site updates.
+            // Looking for table rows in a general sense.
+            const rows = doc.querySelectorAll('table tbody tr');
+
+            const excludeTxt = document.getElementById('excludeKeyword').value;
+            const excludes = excludeTxt ? excludeTxt.split(',').map(s => s.trim()).filter(s => s) : [];
+
+            let addedCount = 0;
+            const resultBody = document.getElementById('resultBody');
+            if (resultBody.querySelector('#emptyRow')) resultBody.innerHTML = '';
+
+            // If no rows found, maybe structure diff
+            if (rows.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="4" class="text-center">데이터를 찾지 못했습니다. (구조 변경 가능성)</td>`;
+                resultBody.appendChild(tr);
+                return;
+            }
+
+            rows.forEach((row, idx) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 4) return;
+
+                // Typical structure: No | Court | Agency | Title(Link) | Date...
+                // Adapt based on inspection or generic fallbacks
+                const court = cells[1]?.innerText.trim() || '-';
+                const agency = cells[2]?.innerText.trim() || '-';
+                const titleEl = cells[3]?.querySelector('a');
+                const title = titleEl ? titleEl.innerText.trim() : cells[3]?.innerText.trim();
+                const linkSuffix = titleEl ? titleEl.getAttribute('href') : '';
+                const link = linkSuffix ? `https://www.scourt.go.kr${linkSuffix}` : '#';
+
+                // Filter
+                let isExcluded = false;
+                for (let ex of excludes) {
+                    if (title.includes(ex) || court.includes(ex) || agency.includes(ex)) {
+                        isExcluded = true;
+                        break;
+                    }
+                }
+
+                if (!isExcluded) {
+                    const item = {
+                        no: results.length + 1,
+                        court, agency, title, link
+                    };
+                    results.push(item);
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'animate__animated animate__fadeIn';
+                    tr.innerHTML = `
+                        <td>${item.no}</td>
+                        <td><small class="d-block text-secondary">${item.court}</small>${item.agency}</td>
+                        <td>${item.title}</td>
+                        <td>
+                            ${item.link !== '#' ? `<a href="${item.link}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-box-arrow-up-right"></i></a>` : '-'}
+                        </td>
+                    `;
+                    resultBody.appendChild(tr);
+                    addedCount++;
+                }
+            });
+
+            document.getElementById('resultCount').innerText = `${results.length}건`;
+
+            if (addedCount === 0) {
+                alert('검색 결과가 없거나 모든 결과가 필터링되었습니다.');
+            }
+        }
+
+        // Export Functions
+        function exportTXT() {
+            if (results.length === 0) { alert('저장할 데이터가 없습니다.'); return; }
+            let content = "번호\t법원/기관\t제목\t링크\n";
+            results.forEach(r => {
+                content += `${r.no}\t${r.court} ${r.agency}\t${r.title}\t${r.link}\n`;
+            });
+            downloadFile(content, `CarAuction_${new Date().toISOString().slice(0, 10)}.txt`, 'text/plain');
+        }
+
+        function exportCSV() {
+            if (results.length === 0) { alert('저장할 데이터가 없습니다.'); return; }
+            let content = "\uFEFF번호,법원/기관,제목,링크\n"; // BOM for Excel
+            results.forEach(r => {
+                const safeTitle = r.title.replace(/,/g, ' ');
+                content += `${r.no},${r.court} ${r.agency},${safeTitle},${r.link}\n`;
+            });
+            downloadFile(content, `CarAuction_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv');
+        }
+
+        function downloadFile(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+
+</html>
