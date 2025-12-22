@@ -198,6 +198,56 @@ function updateMapLink(address) {
         mapEmbed.src = `https://maps.google.com/maps?q=${encodeURIComponent(cleanedAddress)}&output=embed`;
     }
 }
+
+// 4. 강제집행 비용 계산기 로직
+window.toggleEvictionCalc = function () {
+    const area = document.getElementById('eviction-calc-area');
+    const icon = document.getElementById('eviction-toggle-icon');
+    if (area.style.display === 'none') {
+        area.style.display = 'block';
+        icon.innerText = '▲';
+    } else {
+        area.style.display = 'none';
+        icon.innerText = '▼';
+    }
+};
+
+window.calculateEvictionCost = function () {
+    const pyeongInput = document.getElementById('eviction-pyeong');
+    const p = parseFloat(pyeongInput.value);
+
+    if (!p || p <= 0) {
+        alert('전용면적을 올바르게 입력해주세요.');
+        return;
+    }
+
+    // Cost Constants
+    const fixedCost = 100000 + 1100000; // Filing + Storage/Transport (1.2M)
+
+    let workers = 0;
+    if (p < 5) workers = 4;
+    else if (p < 10) workers = 7;
+    else if (p < 20) workers = 10;
+    else if (p < 30) workers = 13;
+    else if (p < 40) workers = 16;
+    else if (p < 50) workers = 19;
+    else {
+        // Over 50: 19 + 2 per 10 pyeong
+        const extraUnits = Math.ceil((p - 50) / 10);
+        workers = 19 + (extraUnits * 2);
+    }
+
+    const laborCost = workers * 130000;
+    const totalCost = fixedCost + laborCost;
+
+    // Update UI
+    document.getElementById('ev-workers').innerText = workers;
+    document.getElementById('ev-total').innerText = totalCost.toLocaleString();
+    document.getElementById('ev-fixed').innerText = fixedCost.toLocaleString();
+    document.getElementById('ev-labor').innerText = laborCost.toLocaleString();
+
+    document.getElementById('eviction-result').style.display = 'block';
+};
 // --- End New Features Logic ---
 
 function runAnalysis() {
