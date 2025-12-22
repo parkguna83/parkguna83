@@ -2,6 +2,52 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import RealEstateAuctionCalculator from '../utils/calculator';
 
+// Helper for Input Fields
+const InputGroup = ({ label, name, type = "text", value, onChange }) => (
+    <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
+        <label style={{ flex: '1', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{label}</label>
+        <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={onChange}
+            style={{
+                flex: '2',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--glass-border)',
+                background: 'rgba(0,0,0,0.2)',
+                color: 'white',
+                outline: 'none',
+                fontSize: '0.9rem'
+            }}
+        />
+    </div>
+);
+
+const SelectGroup = ({ label, name, value, options, onChange }) => (
+    <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
+        <label style={{ flex: '1', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{label}</label>
+        <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            style={{
+                flex: '2',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--glass-border)',
+                background: 'rgba(0,0,0,0.2)',
+                color: 'white',
+                outline: 'none',
+                fontSize: '0.9rem'
+            }}
+        >
+            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        </select>
+    </div>
+);
+
 const RealEstate = () => {
     // Input State
     const [inputs, setInputs] = useState({
@@ -125,51 +171,7 @@ const RealEstate = () => {
         });
     };
 
-    // Helper for Input Fields
-    const InputGroup = ({ label, name, type = "text", value, onChange }) => (
-        <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-            <label style={{ flex: '1', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{label}</label>
-            <input
-                type={type}
-                name={name}
-                value={value}
-                onChange={onChange}
-                style={{
-                    flex: '2',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--glass-border)',
-                    background: 'rgba(0,0,0,0.2)',
-                    color: 'white',
-                    outline: 'none',
-                    fontSize: '0.9rem'
-                }}
-            />
-        </div>
-    );
 
-    const SelectGroup = ({ label, name, value, options, onChange }) => (
-        <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-            <label style={{ flex: '1', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{label}</label>
-            <select
-                name={name}
-                value={value}
-                onChange={onChange}
-                style={{
-                    flex: '2',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--glass-border)',
-                    background: 'rgba(0,0,0,0.2)',
-                    color: 'white',
-                    outline: 'none',
-                    fontSize: '0.9rem'
-                }}
-            >
-                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-        </div>
-    );
 
     return (
         <div className="container" style={{ paddingBottom: '60px' }}>

@@ -401,7 +401,4 @@ export default class RealEstateAuctionCalculator {
         return Math.round(num).toLocaleString('ko-KR');
     }
 }
-// Export for Node.js environment
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = RealEstateAuctionCalculator;
-}
+
