@@ -27,6 +27,40 @@ const RealEstate = () => {
     // Result State
     const [result, setResult] = useState(null);
 
+    // Eviction Cost State
+    const [showEvictionCalc, setShowEvictionCalc] = useState(false);
+    const [evictionPyeong, setEvictionPyeong] = useState('');
+    const [evictionResult, setEvictionResult] = useState(null);
+
+    const handleEvictionCalculate = () => {
+        if (!evictionPyeong) return;
+
+        const p = Number(evictionPyeong);
+        const fixedCost = 100000 + 1100000; // Filing + Storage/Transport
+
+        let workers = 0;
+        if (p < 5) workers = 4;
+        else if (p < 10) workers = 7;
+        else if (p < 20) workers = 10;
+        else if (p < 30) workers = 13;
+        else if (p < 40) workers = 16;
+        else if (p < 50) workers = 19;
+        else {
+            const extraUnits = Math.ceil((p - 50) / 10);
+            workers = 19 + (extraUnits * 2);
+        }
+
+        const laborCost = workers * 130000;
+        const totalCost = fixedCost + laborCost;
+
+        setEvictionResult({
+            workers,
+            fixedCost,
+            laborCost,
+            totalCost
+        });
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         // Simple numeric formatting removal if needed, but for now raw strings
@@ -194,6 +228,95 @@ const RealEstate = () => {
                             AI 분석 실행
                         </button>
                     </form>
+
+                    {/* Forced Eviction Cost Calculator Section */}
+                    <div style={{ marginTop: '32px', borderTop: '1px dashed var(--glass-border)', paddingTop: '24px' }}>
+                        <button
+                            type="button"
+                            onClick={() => setShowEvictionCalc(!showEvictionCalc)}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '8px',
+                                color: 'var(--text-primary)',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <span>🏗️ 강제집행 비용 계산기</span>
+                            <span>{showEvictionCalc ? '▲' : '▼'}</span>
+                        </button>
+
+                        {showEvictionCalc && (
+                            <div className="fade-in" style={{ marginTop: '16px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px' }}>
+                                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                    <input
+                                        type="number"
+                                        placeholder="전용면적 (평)"
+                                        value={evictionPyeong}
+                                        onChange={(e) => setEvictionPyeong(e.target.value)}
+                                        style={{
+                                            flex: '1',
+                                            padding: '8px 12px',
+                                            borderRadius: '6px',
+                                            border: '1px solid var(--glass-border)',
+                                            background: 'rgba(255,255,255,0.1)',
+                                            color: 'white',
+                                            outline: 'none'
+                                        }}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleEvictionCalculate()}
+                                    />
+                                    <button
+                                        onClick={handleEvictionCalculate}
+                                        style={{
+                                            padding: '8px 16px',
+                                            background: 'var(--text-accent)',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            color: '#000',
+                                            fontWeight: 'bold',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        계산
+                                    </button>
+                                </div>
+
+                                {evictionResult && (
+                                    <div style={{ fontSize: '0.9rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                            <span style={{ color: 'var(--text-secondary)' }}>투입 인원:</span>
+                                            <span style={{ fontWeight: 'bold' }}>{evictionResult.workers}명</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid var(--glass-border)' }}>
+                                            <span style={{ color: 'var(--text-secondary)' }}>예상 비용:</span>
+                                            <span style={{ fontWeight: 'bold', color: '#4ade80' }}>{formatNumber(evictionResult.totalCost)}원</span>
+                                        </div>
+
+                                        <details style={{ marginBottom: '8px' }}>
+                                            <summary style={{ cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>상세 내역 보기</summary>
+                                            <div style={{ marginTop: '8px', paddingLeft: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                                <div>• 고정비 (접수+운반/보관): {formatNumber(evictionResult.fixedCost)}원</div>
+                                                <div>• 노무비 ({evictionResult.workers}인): {formatNumber(evictionResult.laborCost)}원</div>
+                                            </div>
+                                        </details>
+
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'rgba(255,200,0,0.1)', padding: '8px', borderRadius: '4px' }}>
+                                            ⚠️ <strong>주의사항</strong><br />
+                                            - 야간/공휴일 집행 시 20~30% 할증<br />
+                                            - 특수장비(사다리차 등) 비용 별도<br />
+                                            - 실제 집행 상황에 따라 환급/추가 청구 가능
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Result Column */}
