@@ -413,6 +413,57 @@
                                     <i class="bi bi-arrow-counterclockwise"></i> 모두 초기화
                                 </button>
                             </div>
+
+                            <!-- Forced Eviction Cost Calculator Section -->
+                            <div
+                                style="margin-top: 24px; border-top: 1px dashed var(--glass-border); padding-top: 16px;">
+                                <button type="button"
+                                    class="btn btn-outline-light w-100 d-flex justify-content-between align-items-center"
+                                    onclick="toggleEvictionCalc()"
+                                    style="background: rgba(255, 255, 255, 0.05); border-color: var(--glass-border);">
+                                    <span>🏗️ 강제집행 비용 계산기</span>
+                                    <span id="eviction-toggle-icon">▼</span>
+                                </button>
+
+                                <div id="eviction-calc-area" class="mt-3 p-3 rounded"
+                                    style="display: none; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);">
+                                    <div class="d-flex gap-2 mb-2">
+                                        <input type="number" id="eviction-pyeong" class="form-control form-control-sm"
+                                            placeholder="전용면적 (평)"
+                                            onkeypress="if(event.key==='Enter') calculateEvictionCost()">
+                                        <button type="button" class="btn btn-sm btn-warning fw-bold"
+                                            onclick="calculateEvictionCost()">계산</button>
+                                    </div>
+
+                                    <div id="eviction-result" style="display: none; font-size: 0.9rem;">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-secondary">투입 인원:</span>
+                                            <span class="fw-bold"><span id="ev-workers">0</span>명</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2 pb-2"
+                                            style="border-bottom: 1px solid var(--glass-border);">
+                                            <span class="text-secondary">예상 비용:</span>
+                                            <span class="fw-bold text-success"><span id="ev-total">0</span>원</span>
+                                        </div>
+
+                                        <details class="mb-2">
+                                            <summary class="text-secondary" style="font-size: 0.8rem; cursor: pointer;">
+                                                상세 내역 보기</summary>
+                                            <div class="ps-2 mt-1 text-secondary" style="font-size: 0.85rem;">
+                                                <div>• 고정비: <span id="ev-fixed">1,200,000</span>원</div>
+                                                <div>• 노무비: <span id="ev-labor">0</span>원</div>
+                                            </div>
+                                        </details>
+
+                                        <div class="p-2 rounded"
+                                            style="font-size: 0.8rem; color: var(--text-secondary); background: rgba(255,200,0,0.1);">
+                                            ⚠️ <strong>주의사항</strong><br>
+                                            - 야간/공휴일 20~30% 할증<br>
+                                            - 특수장비 비용 별도
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
