@@ -320,13 +320,15 @@
 
         async function fetchWithFallback(url) {
             const proxies = [
-                // 1. AllOrigins (JSON) - often reliable
+                // 1. AllOrigins (JSON)
                 prefix => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                // 2. CORSProxy.io (Direct)
+                // 2. CodeTabs (Often works)
+                prefix => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+                // 3. CORSProxy.io
                 prefix => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                // 3. ThingProxy - another alternative
+                // 4. ThingProxy
                 prefix => `https://thingproxy.freeboard.io/fetch/${url}`,
-                // 4. Herokuapp (Demo) - last resort, may be rate limited or down
+                // 5. Herokuapp (Requires activation)
                 prefix => `https://cors-anywhere.herokuapp.com/${url}`
             ];
 
@@ -368,7 +370,7 @@
                 const response = await fetchWithFallback(originalUrl);
                 const data = await response.json();
 
-                if (data.returnValue === 'success') {
+                if (data && data.returnValue === 'success') {
                     const numbers = [
                         data.drwtNo1, data.drwtNo2, data.drwtNo3,
                         data.drwtNo4, data.drwtNo5, data.drwtNo6
@@ -380,7 +382,13 @@
                 }
             } catch (error) {
                 console.error('Final Error fetching lotto numbers:', error);
-                statusEl.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> 로드 실패 (${latestDrwNo}회). 직접 입력해주세요.</span>`;
+                const searchUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent('로또 ' + latestDrwNo + '회 당첨번호')}`;
+                statusEl.innerHTML = `
+                    <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> 로드 실패 (${latestDrwNo}회). </span>
+                    <a href="${searchUrl}" target="_blank" class="text-decoration-none text-warning small ms-1">
+                        <i class="bi bi-box-arrow-up-right"></i> 번호 확인
+                    </a>
+                `;
                 inputEl.placeholder = '예: 1, 2, 3, 4, 5, 6';
             }
         }
