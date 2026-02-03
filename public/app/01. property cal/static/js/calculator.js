@@ -393,7 +393,15 @@ class RealEstateAuctionCalculator {
 
         if (roe >= 20 && margin >= 10000000) return { grade: "S", comment: "강력 추천", reason: `수익률(ROE ${roe.toFixed(1)}%)과 안전마진(${this.formatNumber(margin)}원)이 최상위입니다.` };
         else if (roe >= 12 && margin >= 5000000) return { grade: "A", comment: "우수함", reason: `수익률(ROE ${roe.toFixed(1)}%)이 양호하고 안전마진(${this.formatNumber(margin)}원)이 확보됩니다.` };
-        else if (roe >= 6 && margin >= 0) return { grade: "B", comment: "보통", reason: `수익률(ROE ${roe.toFixed(1)}%)이 금리 대비 양호하나 안전마진(${this.formatNumber(margin)}원)이 적습니다.` };
+        else if (roe >= 6 && margin >= 0) {
+            // [B등급 세분화] 
+            // Case 1: 안전마진은 충분하나(500만 이상) ROE가 A급(12%)에 못미치는 경우
+            if (margin >= 5000000) {
+                return { grade: "B", comment: "보통", reason: `안전마진(${this.formatNumber(margin)}원)은 충분하나 수익률(ROE ${roe.toFixed(1)}%)이 목표(12%) 대비 다소 낮습니다.` };
+            }
+            // Case 2: 안전마진 자체가 적은 경우
+            return { grade: "B", comment: "보통", reason: `수익률(ROE ${roe.toFixed(1)}%)은 나오지만 안전마진(${this.formatNumber(margin)}원)이 다소 적습니다.` };
+        }
         else return { grade: "C", comment: "재고 필요", reason: `수익률(ROE ${roe.toFixed(1)}%)이 낮거나 안전마진(${this.formatNumber(margin)}원)이 확보되지 않아 리스크가 있습니다.` };
     }
 
