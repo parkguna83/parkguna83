@@ -244,14 +244,26 @@
                     <h4 class="mb-4"><i class="bi bi-sliders"></i> 분석 설정</h4>
 
                     <div class="mb-4">
-                        <label for="lastWeekNums" class="form-label fw-bold">지난주 당첨 번호 (자동 로드)</label>
+                        <label for="lastWeekNums" class="form-label fw-bold">
+                            지난주 당첨 번호
+                            <a href="https://www.dhlottery.co.kr/gameResult.do?method=byWin" target="_blank"
+                                class="text-info text-decoration-none small ms-2">
+                                <i class="bi bi-box-arrow-up-right"></i> 동행복권에서 확인
+                            </a>
+                        </label>
                         <div class="input-group">
                             <span class="input-group-text bg-transparent text-light border-secondary"><i
                                     class="bi bi-calendar-check"></i></span>
-                            <input type="text" id="lastWeekNums" class="form-control" placeholder="최신 회차 번호를 불러오는 중...">
+                            <input type="text" id="lastWeekNums" class="form-control"
+                                placeholder="예: 3, 12, 15, 23, 31, 42">
+                            <button class="btn btn-outline-success" type="button" id="retryBtn"
+                                onclick="fetchAndSetLatestNumbers()" title="자동 로드 시도">
+                                <i class="bi bi-download"></i>
+                            </button>
                         </div>
-                        <small id="fetchStatus" class="mt-2 d-block"><i class="bi bi-hourglass-split"></i> 데이터 로딩
-                            중...</small>
+                        <small id="fetchStatus" class="mt-2 d-block text-secondary">
+                            <i class="bi bi-info-circle"></i> 자동 로드 시도 후 실패 시 위 링크에서 번호를 확인하여 입력해주세요
+                        </small>
                     </div>
 
                     <div class="mb-4">
@@ -318,42 +330,265 @@
             return latestDrwNo;
         }
 
-        async function fetchWithFallback(url) {
-            const proxies = [
-                // 1. AllOrigins (JSON)
-                prefix => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                // 2. CodeTabs (Often works)
-                prefix => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
-                // 3. CORSProxy.io
-                prefix => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                // 4. ThingProxy
-                prefix => `https://thingproxy.freeboard.io/fetch/${url}`,
-                // 5. Herokuapp (Requires activation)
-                prefix => `https://cors-anywhere.herokuapp.com/${url}`
-            ];
+        // HTML 파싱 함수 - 동행복권 메인 페이지에서 로또 번호 추출
+        function parseDHLotteryHomepage(html, expectedRound) {
+            try {
+                // 회차 검증
+                const roundMatch = html.match(/data-ltepsd="(\d+)"/);
+                if (roundMatch) {
+                    const foundRound = parseInt(roundMatch[1]);
+                    if (foundRound !== expectedRound) {
+                        console.warn(`회차 불일치: 기대 ${expectedRound}, 발견 ${foundRound}`);
+                        return null;
+                    }
+                }
 
-            // 5. If all else fails, we can try to use a dummy data generator or fail gracefully
-            // For now, we iterate proxies
+                // lt-ball 클래스를 가진 span 태그에서 숫자 추출
+                // <span class="lt-ball num-Xn">숫자</span> 형식
+                const ballPattern = /<span[^>]*class="lt-ball[^"]*num-\dn"[^>]*>(\d{1,2})<\/span>/g;
+                const matches = [...html.matchAll(ballPattern)];
 
-            for (const proxyGen of proxies) {
-                try {
-                    const proxyUrl = proxyGen();
-                    console.log('Trying proxy:', proxyUrl);
+                if (matches.length >= 6) {
+                    // 처음 6개가 당첨번호, 7번째가 보너스
+                    const numbers = matches.slice(0, 6).map(m => parseInt(m[1]));
 
-                    // Set a timeout for each request to avoid hanging
+                    // 검증: 모든 번호가 1-45 범위이고 중복이 없어야 함
+                    if (numbers.every(n => n >= 1 && n <= 45) &&
+                        new Set(numbers).size === 6) {
+                        console.log('✓ DHLottery Homepage parsing succeeded');
+                        return numbers.sort((a, b) => a - b);
+                    }
+                }
+
+                return null;
+            } catch (e) {
+                console.error('DHLottery homepage parsing error:', e);
+                return null;
+            }
+        }
+
+        // HTML 파싱 함수 - 네이버 검색 결과에서 로또 번호 추출
+        function parseNaverLottoNumbers(html) {
+            try {
+                // Pattern 1: Look for 6 consecutive numbers separated by commas
+                const pattern1 = /(\d{1,2})\s*,\s*(\d{1,2})\s*,\s*(\d{1,2})\s*,\s*(\d{1,2})\s*,\s*(\d{1,2})\s*,\s*(\d{1,2})/;
+                const match1 = html.match(pattern1);
+
+                if (match1) {
+                    const numbers = [
+                        parseInt(match1[1]), parseInt(match1[2]), parseInt(match1[3]),
+                        parseInt(match1[4]), parseInt(match1[5]), parseInt(match1[6])
+                    ];
+                    // Validate: all numbers should be between 1-45
+                    if (numbers.every(n => n >= 1 && n <= 45)) {
+                        console.log('✓ Naver parsing succeeded (Pattern 1)');
+                        return numbers.sort((a, b) => a - b);
+                    }
+                }
+
+                // Pattern 2: Look for numbers in span/div elements (common in Naver results)
+                const pattern2 = /<span[^>]*>\s*(\d{1,2})\s*<\/span>\s*<span[^>]*>\s*(\d{1,2})\s*<\/span>\s*<span[^>]*>\s*(\d{1,2})\s*<\/span>\s*<span[^>]*>\s*(\d{1,2})\s*<\/span>\s*<span[^>]*>\s*(\d{1,2})\s*<\/span>\s*<span[^>]*>\s*(\d{1,2})\s*<\/span>/;
+                const match2 = html.match(pattern2);
+
+                if (match2) {
+                    const numbers = [
+                        parseInt(match2[1]), parseInt(match2[2]), parseInt(match2[3]),
+                        parseInt(match2[4]), parseInt(match2[5]), parseInt(match2[6])
+                    ];
+                    if (numbers.every(n => n >= 1 && n <= 45)) {
+                        console.log('✓ Naver parsing succeeded (Pattern 2)');
+                        return numbers.sort((a, b) => a - b);
+                    }
+                }
+
+                return null;
+            } catch (e) {
+                console.error('Naver parsing error:', e);
+                return null;
+            }
+        }
+
+        async function fetchWithFallback(url, latestDrwNo) {
+            const strategies = [
+                // Strategy 1: AllOrigins with 'get' endpoint (wraps response in JSON)
+                async () => {
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                    console.log('Strategy 1: AllOrigins GET (Official API)');
+
                     const controller = new AbortController();
                     const id = setTimeout(() => controller.abort(), 5000);
 
                     const response = await fetch(proxyUrl, { signal: controller.signal });
                     clearTimeout(id);
 
-                    if (response.ok) return response;
+                    if (response.ok) {
+                        const wrapper = await response.json();
+                        if (wrapper && wrapper.contents) {
+                            // AllOrigins wraps the actual response in 'contents'
+                            const actualData = JSON.parse(wrapper.contents);
+                            console.log('✓ AllOrigins succeeded');
+                            return actualData;
+                        }
+                    }
+                    throw new Error('AllOrigins failed');
+                },
+
+                // Strategy 2: DHLottery Homepage Parsing (우선순위 높음)
+                async () => {
+                    const homepageUrl = 'https://www.dhlottery.co.kr/';
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(homepageUrl)}`;
+                    console.log('Strategy 2: DHLottery Homepage Parsing');
+
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 8000);
+
+                    const response = await fetch(proxyUrl, { signal: controller.signal });
+                    clearTimeout(id);
+
+                    if (response.ok) {
+                        const wrapper = await response.json();
+                        if (wrapper && wrapper.contents) {
+                            const html = wrapper.contents;
+                            const numbers = parseDHLotteryHomepage(html, latestDrwNo);
+
+                            if (numbers && numbers.length === 6) {
+                                return {
+                                    returnValue: 'success',
+                                    drwtNo1: numbers[0],
+                                    drwtNo2: numbers[1],
+                                    drwtNo3: numbers[2],
+                                    drwtNo4: numbers[3],
+                                    drwtNo5: numbers[4],
+                                    drwtNo6: numbers[5]
+                                };
+                            }
+                        }
+                    }
+                    throw new Error('DHLottery homepage parsing failed');
+                },
+
+                // Strategy 3: CORS Proxy io
+                async () => {
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    console.log('Strategy 3: CORS Proxy (Official API)');
+
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch(proxyUrl, { signal: controller.signal });
+                    clearTimeout(id);
+
+                    if (response.ok) {
+                        const text = await response.text();
+                        if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+                            const data = JSON.parse(text);
+                            console.log('✓ CORS Proxy succeeded');
+                            return data;
+                        }
+                    }
+                    throw new Error('CORS Proxy returned HTML');
+                },
+
+                // Strategy 4: CodeTabs
+                async () => {
+                    const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
+                    console.log('Strategy 4: CodeTabs (Official API)');
+
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch(proxyUrl, { signal: controller.signal });
+                    clearTimeout(id);
+
+                    if (response.ok) {
+                        const text = await response.text();
+                        if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+                            const data = JSON.parse(text);
+                            console.log('✓ CodeTabs succeeded');
+                            return data;
+                        }
+                    }
+                    throw new Error('CodeTabs returned HTML');
+                },
+
+                // Strategy 5: Naver Search Results Parsing
+                async () => {
+                    const naverSearchUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent('동행복권 로또 ' + latestDrwNo + '회 당첨번호')}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(naverSearchUrl)}`;
+                    console.log('Strategy 5: Naver Search Parsing');
+
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), 8000);
+
+                    const response = await fetch(proxyUrl, { signal: controller.signal });
+                    clearTimeout(id);
+
+                    if (response.ok) {
+                        const wrapper = await response.json();
+                        if (wrapper && wrapper.contents) {
+                            const html = wrapper.contents;
+                            const numbers = parseNaverLottoNumbers(html);
+
+                            if (numbers && numbers.length === 6) {
+                                return {
+                                    returnValue: 'success',
+                                    drwtNo1: numbers[0],
+                                    drwtNo2: numbers[1],
+                                    drwtNo3: numbers[2],
+                                    drwtNo4: numbers[3],
+                                    drwtNo5: numbers[4],
+                                    drwtNo6: numbers[5]
+                                };
+                            }
+                        }
+                    }
+                    throw new Error('Naver parsing failed');
+                }
+            ];
+
+            for (let i = 0; i < strategies.length; i++) {
+                try {
+                    const data = await strategies[i]();
+                    return data;
                 } catch (e) {
-                    console.warn('Proxy failed:', e);
+                    console.warn(`Strategy ${i + 1} failed:`, e.message);
                     continue;
                 }
             }
-            throw new Error('All proxies failed');
+            throw new Error('모든 프록시 서버 연결 실패');
+        }
+
+        // 수동 입력 가이드 및 실시간 검증
+        function setupManualInputHelpers(inputEl, statusEl) {
+            // Paste cleanup
+            inputEl.addEventListener('paste', (e) => {
+                setTimeout(() => {
+                    let value = inputEl.value;
+                    // Remove all non-digit and non-comma characters
+                    value = value.replace(/[^\d,]/g, '');
+                    // Remove multiple consecutive commas
+                    value = value.replace(/,+/g, ',');
+                    // Remove leading/trailing commas
+                    value = value.replace(/^,|,$/g, '');
+                    inputEl.value = value;
+
+                    // Trigger validation
+                    inputEl.dispatchEvent(new Event('input'));
+                }, 10);
+            });
+
+            // Real-time validation
+            inputEl.addEventListener('input', (e) => {
+                const value = e.target.value;
+                const numbers = value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+
+                if (numbers.length === 6 && numbers.every(n => n >= 1 && n <= 45)) {
+                    statusEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill"></i> 6개 번호 입력 완료!</span>`;
+                } else if (numbers.length > 0) {
+                    const validCount = numbers.filter(n => n >= 1 && n <= 45).length;
+                    statusEl.innerHTML = `<span class="text-info"><i class="bi bi-info-circle"></i> ${validCount}/6 유효한 번호 입력됨</span>`;
+                }
+            });
         }
 
         async function fetchAndSetLatestNumbers() {
@@ -363,12 +598,15 @@
             const statusEl = document.getElementById('fetchStatus');
             const inputEl = document.getElementById('lastWeekNums');
 
+            // Setup manual input helpers
+            setupManualInputHelpers(inputEl, statusEl);
+
             // UI Update
             statusEl.innerHTML = `<span class="text-secondary"><span class="spinner-border spinner-border-sm" role="status"></span> ${latestDrwNo}회차 정보 조회 중...</span>`;
 
             try {
-                const response = await fetchWithFallback(originalUrl);
-                const data = await response.json();
+                // fetchWithFallback now tries all strategies including Naver parsing
+                const data = await fetchWithFallback(originalUrl, latestDrwNo);
 
                 if (data && data.returnValue === 'success') {
                     const numbers = [
@@ -376,20 +614,55 @@
                         data.drwtNo4, data.drwtNo5, data.drwtNo6
                     ].sort((a, b) => a - b);
                     inputEl.value = numbers.join(', ');
+                    inputEl.disabled = false;
                     statusEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill"></i> ${latestDrwNo}회차 번호 자동 로드 완료</span>`;
+
+                    // Cache to localStorage
+                    try {
+                        localStorage.setItem(`lotto_${latestDrwNo}`, numbers.join(','));
+                    } catch (e) {
+                        console.warn('localStorage save failed:', e);
+                    }
                 } else {
-                    throw new Error(data.message || 'API 데이터 오류: success 아님');
+                    throw new Error('API 응답: returnValue가 success가 아님');
                 }
             } catch (error) {
-                console.error('Final Error fetching lotto numbers:', error);
+                console.error('로또 번호 로드 실패:', error);
+
+                // Try to load from localStorage cache
+                try {
+                    const cached = localStorage.getItem(`lotto_${latestDrwNo}`);
+                    if (cached) {
+                        inputEl.value = cached;
+                        statusEl.innerHTML = `<span class="text-info"><i class="bi bi-clock-history"></i> ${latestDrwNo}회차 캐시에서 로드됨</span>`;
+                        inputEl.disabled = false;
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('localStorage read failed:', e);
+                }
+
                 const searchUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent('로또 ' + latestDrwNo + '회 당첨번호')}`;
                 statusEl.innerHTML = `
-                    <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> 로드 실패 (${latestDrwNo}회). </span>
-                    <a href="${searchUrl}" target="_blank" class="text-decoration-none text-warning small ms-1">
-                        <i class="bi bi-box-arrow-up-right"></i> 번호 확인
+                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> ${latestDrwNo}회차 자동 로드 실패</span>
+                    <a href="${searchUrl}" target="_blank" class="text-decoration-none text-info small ms-2">
+                        <i class="bi bi-box-arrow-up-right"></i> 네이버에서 확인
                     </a>
+                    <span class="text-secondary small d-block mt-1">
+                        → 로컬 파일(file://)에서는 CORS 제한으로 자동 로드가 어렵습니다.<br>
+                        → <strong>GitHub Pages 배포 후</strong> 테스트하거나, 수동으로 번호를 입력해주세요.
+                    </span>
+                `;
+                statusEl.innerHTML = `
+                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> ${latestDrwNo}회차 자동 로드 실패</span>
+                    <a href="${searchUrl}" target="_blank" class="text-decoration-none text-info small ms-2">
+                        <i class="bi bi-box-arrow-up-right"></i> 네이버에서 확인
+                    </a>
+                    <span class="text-secondary small d-block mt-1">→ 수동으로 번호를 입력해주세요 (복사-붙여넣기 가능)</span>
                 `;
                 inputEl.placeholder = '예: 1, 2, 3, 4, 5, 6';
+                inputEl.disabled = false;
+                inputEl.value = '';
             }
         }
 
