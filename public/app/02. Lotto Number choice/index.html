@@ -410,13 +410,15 @@
 
         async function fetchWithFallback(url, latestDrwNo) {
             const strategies = [
-                // Strategy 1: AllOrigins with 'get' endpoint (wraps response in JSON)
+                // Strategy 1: Direct JSON API (가장 안정적)
                 async () => {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-                    console.log('Strategy 1: AllOrigins GET (Official API)');
+                    const jsonApiUrl = `https://dhlottery.co.kr/lt645/selectPstLt645Info.do?srchLtEpsd=${latestDrwNo}`;
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(jsonApiUrl)}`;
+                    console.log('Strategy 1: Direct JSON API');
+                    console.log('📍 URL:', jsonApiUrl);
 
                     const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 5000);
+                    const id = setTimeout(() => controller.abort(), 8000);
 
                     const response = await fetch(proxyUrl, { signal: controller.signal });
                     clearTimeout(id);
@@ -424,13 +426,38 @@
                     if (response.ok) {
                         const wrapper = await response.json();
                         if (wrapper && wrapper.contents) {
-                            // AllOrigins wraps the actual response in 'contents'
-                            const actualData = JSON.parse(wrapper.contents);
-                            console.log('✓ AllOrigins succeeded');
-                            return actualData;
+                            const jsonData = JSON.parse(wrapper.contents);
+                            console.log('📦 Received JSON:', jsonData);
+
+                            // JSON 구조: data.list[0]에 당첨번호 정보
+                            if (jsonData.data && jsonData.data.list && jsonData.data.list.length > 0) {
+                                const lottoData = jsonData.data.list[0];
+
+                                // tm1WnNo ~ tm6WnNo가 당첨번호, bnsWnNo가 보너스번호
+                                const numbers = [
+                                    lottoData.tm1WnNo,
+                                    lottoData.tm2WnNo,
+                                    lottoData.tm3WnNo,
+                                    lottoData.tm4WnNo,
+                                    lottoData.tm5WnNo,
+                                    lottoData.tm6WnNo
+                                ].sort((a, b) => a - b);
+
+                                console.log('✅ JSON API 성공! 번호:', numbers);
+
+                                return {
+                                    returnValue: 'success',
+                                    drwtNo1: numbers[0],
+                                    drwtNo2: numbers[1],
+                                    drwtNo3: numbers[2],
+                                    drwtNo4: numbers[3],
+                                    drwtNo5: numbers[4],
+                                    drwtNo6: numbers[5]
+                                };
+                            }
                         }
                     }
-                    throw new Error('AllOrigins failed');
+                    throw new Error('JSON API failed');
                 },
 
                 // Strategy 2: DHLottery Homepage Parsing (우선순위 높음)
@@ -642,11 +669,11 @@
                     console.warn('localStorage read failed:', e);
                 }
 
-                const searchUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent('로또 ' + latestDrwNo + '회 당첨번호')}`;
+                const lottoUrl = `https://dhlottery.co.kr/lt645/selectPstLt645Info.do?srchLtEpsd=${latestDrwNo}`;
                 statusEl.innerHTML = `
                     <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> ${latestDrwNo}회차 자동 로드 실패</span>
-                    <a href="${searchUrl}" target="_blank" class="text-decoration-none text-info small ms-2">
-                        <i class="bi bi-box-arrow-up-right"></i> 네이버에서 확인
+                    <a href="${lottoUrl}" target="_blank" class="text-decoration-none text-info small ms-2">
+                        <i class="bi bi-box-arrow-up-right"></i> 동행복권에서 확인
                     </a>
                     <span class="text-secondary small d-block mt-1">
                         → 로컬 파일(file://)에서는 CORS 제한으로 자동 로드가 어렵습니다.<br>
