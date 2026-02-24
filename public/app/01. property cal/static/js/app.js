@@ -302,15 +302,18 @@ function runAnalysis() {
     const bid_rate_sim = c.calculate_by_bid_rates();
     const loan_rate_sim = c.calculate_by_loan_rates(); // [NEW] 대출 비율 시뮬레이션
 
-    // 추천 낙찰가율
+    // 추천 낙찰가율: A등급 이상(A, S)이 되는 최저 낙찰가율
     let best_rate_info = null;
     if (bid_rate_sim) {
-        const valid_sim = bid_rate_sim.filter(s => {
-            const rate = parseFloat(s['낙찰가율']);
-            return s['월세수익률'] !== -999 && rate >= 50 && rate <= 100;
-        });
-        if (valid_sim.length > 0) {
-            best_rate_info = valid_sim.reduce((prev, current) => (prev['월세수익률'] > current['월세수익률']) ? prev : current);
+        // A등급 이상만 필터링
+        const gradeA_or_S = bid_rate_sim.filter(s =>
+            (s['등급'] === 'A' || s['등급'] === 'S') && s['월세수익률'] !== -999
+        );
+        if (gradeA_or_S.length > 0) {
+            // 그 중 낙찰가율이 가장 낮은 항목 선택
+            best_rate_info = gradeA_or_S.reduce((prev, current) =>
+                parseFloat(prev['낙찰가율']) < parseFloat(current['낙찰가율']) ? prev : current
+            );
         }
     }
 
