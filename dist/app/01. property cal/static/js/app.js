@@ -302,7 +302,7 @@ function runAnalysis() {
     const bid_rate_sim = c.calculate_by_bid_rates();
     const loan_rate_sim = c.calculate_by_loan_rates(); // [NEW] 대출 비율 시뮬레이션
 
-    // 추천 낙찰가율: A등급 이상(A, S)이 되는 최저 낙찰가율
+    // 추천 낙찰가율: A등급 이상(A, S)이 되는 최고 낙찰가율
     let best_rate_info = null;
     if (bid_rate_sim) {
         // A등급 이상만 필터링
@@ -310,9 +310,9 @@ function runAnalysis() {
             (s['등급'] === 'A' || s['등급'] === 'S') && s['월세수익률'] !== -999
         );
         if (gradeA_or_S.length > 0) {
-            // 그 중 낙찰가율이 가장 낮은 항목 선택
+            // 그 중 낙찰가율이 가장 높은 항목 선택 (이 가격까지 A등급 유지 가능)
             best_rate_info = gradeA_or_S.reduce((prev, current) =>
-                parseFloat(prev['낙찰가율']) < parseFloat(current['낙찰가율']) ? prev : current
+                parseFloat(prev['낙찰가율']) > parseFloat(current['낙찰가율']) ? prev : current
             );
         }
     }
