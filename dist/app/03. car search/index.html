@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>법원 자동차 경매 퀵 런처</title>
+    <link rel="icon" href="data:,">
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-main: 'Outfit', sans-serif;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: 20px;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #38bdf8;
+        }
+
+        body {
+            font-family: var(--font-main), sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.8) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            width: 100%;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            max-width: 800px;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--glass-border);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            width: 100%;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .search-input:focus {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: var(--accent-blue);
+            outline: none;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-launch {
+            background: linear-gradient(to right, #3b82f6, #06b6d4);
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 12px 40px;
+            border-radius: 50px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-launch:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            color: white;
+        }
+
+        .tag-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .search-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+        }
+
+        .search-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .fab-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .fab-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center gap-3">
+                <a href="/parkguna83/" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="bi bi-house-fill"></i> Home
+                </a>
+                <span class="navbar-brand mb-0 h1"><i class="bi bi-rocket-takeoff-fill"></i> 퀵 런처</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="glass-card">
+            <i class="bi bi-car-front-fill text-primary display-1"></i>
+            <h2 class="mt-4 mb-3 fw-bold">법원 자동차 경매 검색</h2>
+            <p class="text-secondary mb-4">
+                보안 접속 문제를 해결하기 위한 스마트 런처입니다.<br>
+                검색어를 입력하면 대법원 경매 사이트로 <strong>즉시 연결</strong>됩니다.
+            </p>
+
+            <div class="mt-4">
+                <input type="text" id="keyword" class="search-input" placeholder="검색어를 입력하세요 (예: 제네시스, 1톤)"
+                    autocomplete="off">
+            </div>
+
+            <div class="tag-container">
+                <div class="search-tag" onclick="setKeyword('자동차')">#자동차</div>
+                <div class="search-tag" onclick="setKeyword('화물차')">#화물차</div>
+                <div class="search-tag" onclick="setKeyword('중장비')">#중장비</div>
+                <div class="search-tag" onclick="setKeyword('제네시스')">#제네시스</div>
+                <div class="search-tag" onclick="setKeyword('포터')">#포터</div>
+            </div>
+
+            <button class="btn-launch" onclick="launchSearch()">
+                <i class="bi bi-search"></i> 대법원 사이트에서 검색
+            </button>
+        </div>
+
+        <div class="text-center text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            대법원 사이트는 외부 프로그램의 자동 접속을 차단하고 있습니다.<br>
+            이 런처는 안전하게 공식 사이트의 결과 페이지를 열어줍니다.
+        </div>
+    </div>
+
+    <!-- Floating Home Button -->
+    <a href="/parkguna83/" class="fab-btn" title="홈으로">
+        <i class="bi bi-house-fill"></i>
+    </a>
+
+    <!-- Hidden Form for EUC-KR Submission -->
+    <form id="scourtForm" action="https://www.scourt.go.kr/portal/notice/realestate/RealNoticeList.work" method="get"
+        target="_blank" accept-charset="EUC-KR" style="display:none;">
+        <input type="hidden" name="searchWord" id="scourtKeyword">
+    </form>
+
+    <script>
+        // Set keyword from tags
+        function setKeyword(text) {
+            const input = document.getElementById('keyword');
+            input.value = text;
+            input.focus();
+            // Visual feedback
+            input.style.borderColor = '#38bdf8';
+            setTimeout(() => input.style.borderColor = '', 300);
+        }
+
+        // Handle Enter key
+        document.getElementById('keyword').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                launchSearch();
+            }
+        });
+
+        // Launch Logic
+        function launchSearch() {
+            let keyword = document.getElementById('keyword').value.trim();
+            if (!keyword) {
+                keyword = '자동차';
+            }
+
+            // Use the hidden form to handle EUC-KR encoding automatically
+            const form = document.getElementById('scourtForm');
+            const hiddenInput = document.getElementById('scourtKeyword');
+
+            hiddenInput.value = keyword;
+
+            // Note: document.charset is read-only.
+            // But relying on accept-charset in the form tag works in most modern browsers for GET requests.
+            // Force submit.
+            form.submit();
+        }
+
+        // Focus input on load
+        window.onload = () => document.getElementById('keyword').focus();
+    </script>
+</body>
+
+</html>
