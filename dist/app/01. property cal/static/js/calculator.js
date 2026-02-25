@@ -387,22 +387,27 @@ class RealEstateAuctionCalculator {
         if (margin === null) margin = this.selling_price - this.calculate_total_cost();
 
         const monthly_net = this.monthly_rent - this.calculate_monthly_interest();
+        const has_selling_price = this.selling_price > 0; // 매도예상가 입력 여부
 
         if (roe === -999 || monthly_net < 0) return { grade: "F", comment: "현금흐름 마이너스", reason: "월세보다 이자가 더 나가거나 실투자금이 0 이하입니다." };
-        if (margin < 0) return { grade: "F", comment: "고가 낙찰 위험", reason: `총 비용(${this.formatNumber(this.calculate_total_cost())}원)이 매도 예상가(${this.formatNumber(this.selling_price)}원)보다 높습니다.` };
 
-        if (roe >= 20 && margin >= 10000000) return { grade: "S", comment: "강력 추천", reason: `수익률(ROE ${roe.toFixed(1)}%)과 안전마진(${this.formatNumber(margin)}원)이 최상위입니다.` };
-        else if (roe >= 12 && margin >= 5000000) return { grade: "A", comment: "우수함", reason: `수익률(ROE ${roe.toFixed(1)}%)이 양호하고 안전마진(${this.formatNumber(margin)}원)이 확보됩니다.` };
-        else if (roe >= 6 && margin >= 0) {
-            // [B등급 세분화] 
-            // Case 1: 안전마진은 충분하나(500만 이상) ROE가 A급(12%)에 못미치는 경우
-            if (margin >= 5000000) {
+        // 매도예상가가 있을 때만 마진 마이너스 체크 (없으면 ROE만으로 판단)
+        if (has_selling_price && margin < 0) return { grade: "F", comment: "고가 낙찰 위험", reason: `총 비용(${this.formatNumber(this.calculate_total_cost())}원)이 매도 예상가(${this.formatNumber(this.selling_price)}원)보다 높습니다.` };
+
+        // 안전마진 조건: 매도예상가 입력 시에만 적용
+        const margin_ok_S = !has_selling_price || margin >= 10000000;
+        const margin_ok_A = !has_selling_price || margin >= 5000000;
+        const margin_ok_B = !has_selling_price || margin >= 0;
+
+        if (roe >= 20 && margin_ok_S) return { grade: "S", comment: "강력 추천", reason: `수익률(ROE ${roe.toFixed(1)}%)${has_selling_price ? `과 안전마진(${this.formatNumber(margin)}원)이 최상위입니다.` : '이 최상위 수준입니다. (매도가 미입력)'}` };
+        else if (roe >= 12 && margin_ok_A) return { grade: "A", comment: "우수함", reason: `수익률(ROE ${roe.toFixed(1)}%)${has_selling_price ? `이 양호하고 안전마진(${this.formatNumber(margin)}원)이 확보됩니다.` : '이 양호합니다. (매도가 미입력)'}` };
+        else if (roe >= 6 && margin_ok_B) {
+            if (has_selling_price && margin >= 5000000) {
                 return { grade: "B", comment: "보통", reason: `안전마진(${this.formatNumber(margin)}원)은 충분하나 수익률(ROE ${roe.toFixed(1)}%)이 목표(12%) 대비 다소 낮습니다.` };
             }
-            // Case 2: 안전마진 자체가 적은 경우
-            return { grade: "B", comment: "보통", reason: `수익률(ROE ${roe.toFixed(1)}%)은 나오지만 안전마진(${this.formatNumber(margin)}원)이 다소 적습니다.` };
+            return { grade: "B", comment: "보통", reason: `수익률(ROE ${roe.toFixed(1)}%)은 나오지만${has_selling_price ? ` 안전마진(${this.formatNumber(margin)}원)이 다소 적습니다.` : ' 매도가가 입력되지 않았습니다.'}` };
         }
-        else return { grade: "C", comment: "재고 필요", reason: `수익률(ROE ${roe.toFixed(1)}%)이 낮거나 안전마진(${this.formatNumber(margin)}원)이 확보되지 않아 리스크가 있습니다.` };
+        else return { grade: "C", comment: "재고 필요", reason: `수익률(ROE ${roe.toFixed(1)}%)이 낮거나${has_selling_price ? ` 안전마진(${this.formatNumber(margin)}원)이 확보되지 않아` : ''} 리스크가 있습니다.` };
     }
 
     formatNumber(num) {
