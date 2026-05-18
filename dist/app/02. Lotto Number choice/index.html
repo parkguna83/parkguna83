@@ -410,135 +410,81 @@
 
         async function fetchWithFallback(url, latestDrwNo) {
             const strategies = [
-                // Strategy 1: Direct JSON API (가장 안정적)
-                async () => {
-                    const jsonApiUrl = `https://dhlottery.co.kr/lt645/selectPstLt645Info.do?srchLtEpsd=${latestDrwNo}`;
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(jsonApiUrl)}`;
-                    console.log('Strategy 1: Direct JSON API');
-                    console.log('📍 URL:', jsonApiUrl);
+                // [비활성] Strategy 1: Direct JSON API - 타임아웃으로 실패하여 주석 처리
+                // async () => {
+                //     const jsonApiUrl = `https://dhlottery.co.kr/lt645/selectPstLt645Info.do?srchLtEpsd=${latestDrwNo}`;
+                //     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(jsonApiUrl)}`;
+                //     const controller = new AbortController();
+                //     const id = setTimeout(() => controller.abort(), 8000);
+                //     const response = await fetch(proxyUrl, { signal: controller.signal });
+                //     clearTimeout(id);
+                //     if (response.ok) {
+                //         const wrapper = await response.json();
+                //         if (wrapper && wrapper.contents) {
+                //             const jsonData = JSON.parse(wrapper.contents);
+                //             if (jsonData.data && jsonData.data.list && jsonData.data.list.length > 0) {
+                //                 const lottoData = jsonData.data.list[0];
+                //                 const numbers = [lottoData.tm1WnNo, lottoData.tm2WnNo, lottoData.tm3WnNo, lottoData.tm4WnNo, lottoData.tm5WnNo, lottoData.tm6WnNo].sort((a, b) => a - b);
+                //                 return { returnValue: 'success', drwtNo1: numbers[0], drwtNo2: numbers[1], drwtNo3: numbers[2], drwtNo4: numbers[3], drwtNo5: numbers[4], drwtNo6: numbers[5] };
+                //             }
+                //         }
+                //     }
+                //     throw new Error('JSON API failed');
+                // },
 
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 8000);
+                // [비활성] Strategy 2: DHLottery Homepage Parsing - 타임아웃으로 실패하여 주석 처리
+                // async () => {
+                //     const homepageUrl = 'https://www.dhlottery.co.kr/';
+                //     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(homepageUrl)}`;
+                //     const controller = new AbortController();
+                //     const id = setTimeout(() => controller.abort(), 8000);
+                //     const response = await fetch(proxyUrl, { signal: controller.signal });
+                //     clearTimeout(id);
+                //     if (response.ok) {
+                //         const wrapper = await response.json();
+                //         if (wrapper && wrapper.contents) {
+                //             const numbers = parseDHLotteryHomepage(wrapper.contents, latestDrwNo);
+                //             if (numbers && numbers.length === 6) {
+                //                 return { returnValue: 'success', drwtNo1: numbers[0], drwtNo2: numbers[1], drwtNo3: numbers[2], drwtNo4: numbers[3], drwtNo5: numbers[4], drwtNo6: numbers[5] };
+                //             }
+                //         }
+                //     }
+                //     throw new Error('DHLottery homepage parsing failed');
+                // },
 
-                    const response = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(id);
+                // [비활성] Strategy 3: CORS Proxy io - HTML 반환으로 실패하여 주석 처리
+                // async () => {
+                //     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                //     const controller = new AbortController();
+                //     const id = setTimeout(() => controller.abort(), 5000);
+                //     const response = await fetch(proxyUrl, { signal: controller.signal });
+                //     clearTimeout(id);
+                //     if (response.ok) {
+                //         const text = await response.text();
+                //         if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+                //             return JSON.parse(text);
+                //         }
+                //     }
+                //     throw new Error('CORS Proxy returned HTML');
+                // },
 
-                    if (response.ok) {
-                        const wrapper = await response.json();
-                        if (wrapper && wrapper.contents) {
-                            const jsonData = JSON.parse(wrapper.contents);
-                            console.log('📦 Received JSON:', jsonData);
+                // [비활성] Strategy 4: CodeTabs - 타임아웃으로 실패하여 주석 처리
+                // async () => {
+                //     const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
+                //     const controller = new AbortController();
+                //     const id = setTimeout(() => controller.abort(), 5000);
+                //     const response = await fetch(proxyUrl, { signal: controller.signal });
+                //     clearTimeout(id);
+                //     if (response.ok) {
+                //         const text = await response.text();
+                //         if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+                //             return JSON.parse(text);
+                //         }
+                //     }
+                //     throw new Error('CodeTabs returned HTML');
+                // },
 
-                            // JSON 구조: data.list[0]에 당첨번호 정보
-                            if (jsonData.data && jsonData.data.list && jsonData.data.list.length > 0) {
-                                const lottoData = jsonData.data.list[0];
-
-                                // tm1WnNo ~ tm6WnNo가 당첨번호, bnsWnNo가 보너스번호
-                                const numbers = [
-                                    lottoData.tm1WnNo,
-                                    lottoData.tm2WnNo,
-                                    lottoData.tm3WnNo,
-                                    lottoData.tm4WnNo,
-                                    lottoData.tm5WnNo,
-                                    lottoData.tm6WnNo
-                                ].sort((a, b) => a - b);
-
-                                console.log('✅ JSON API 성공! 번호:', numbers);
-
-                                return {
-                                    returnValue: 'success',
-                                    drwtNo1: numbers[0],
-                                    drwtNo2: numbers[1],
-                                    drwtNo3: numbers[2],
-                                    drwtNo4: numbers[3],
-                                    drwtNo5: numbers[4],
-                                    drwtNo6: numbers[5]
-                                };
-                            }
-                        }
-                    }
-                    throw new Error('JSON API failed');
-                },
-
-                // Strategy 2: DHLottery Homepage Parsing (우선순위 높음)
-                async () => {
-                    const homepageUrl = 'https://www.dhlottery.co.kr/';
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(homepageUrl)}`;
-                    console.log('Strategy 2: DHLottery Homepage Parsing');
-
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 8000);
-
-                    const response = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(id);
-
-                    if (response.ok) {
-                        const wrapper = await response.json();
-                        if (wrapper && wrapper.contents) {
-                            const html = wrapper.contents;
-                            const numbers = parseDHLotteryHomepage(html, latestDrwNo);
-
-                            if (numbers && numbers.length === 6) {
-                                return {
-                                    returnValue: 'success',
-                                    drwtNo1: numbers[0],
-                                    drwtNo2: numbers[1],
-                                    drwtNo3: numbers[2],
-                                    drwtNo4: numbers[3],
-                                    drwtNo5: numbers[4],
-                                    drwtNo6: numbers[5]
-                                };
-                            }
-                        }
-                    }
-                    throw new Error('DHLottery homepage parsing failed');
-                },
-
-                // Strategy 3: CORS Proxy io
-                async () => {
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                    console.log('Strategy 3: CORS Proxy (Official API)');
-
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 5000);
-
-                    const response = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(id);
-
-                    if (response.ok) {
-                        const text = await response.text();
-                        if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
-                            const data = JSON.parse(text);
-                            console.log('✓ CORS Proxy succeeded');
-                            return data;
-                        }
-                    }
-                    throw new Error('CORS Proxy returned HTML');
-                },
-
-                // Strategy 4: CodeTabs
-                async () => {
-                    const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`;
-                    console.log('Strategy 4: CodeTabs (Official API)');
-
-                    const controller = new AbortController();
-                    const id = setTimeout(() => controller.abort(), 5000);
-
-                    const response = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(id);
-
-                    if (response.ok) {
-                        const text = await response.text();
-                        if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
-                            const data = JSON.parse(text);
-                            console.log('✓ CodeTabs succeeded');
-                            return data;
-                        }
-                    }
-                    throw new Error('CodeTabs returned HTML');
-                },
-
-                // Strategy 5: Naver Search Results Parsing
+                // Strategy 5 (유일 활성): Naver Search Results Parsing
                 async () => {
                     const naverSearchUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent('동행복권 로또 ' + latestDrwNo + '회 당첨번호')}`;
                     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(naverSearchUrl)}`;
@@ -669,23 +615,13 @@
                     console.warn('localStorage read failed:', e);
                 }
 
-                const lottoUrl = `https://dhlottery.co.kr/lt645/selectPstLt645Info.do?srchLtEpsd=${latestDrwNo}`;
+                const lottoUrl = `https://www.dhlottery.co.kr/gameResult.do?method=byWin`;
                 statusEl.innerHTML = `
                     <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> ${latestDrwNo}회차 자동 로드 실패</span>
                     <a href="${lottoUrl}" target="_blank" class="text-decoration-none text-info small ms-2">
                         <i class="bi bi-box-arrow-up-right"></i> 동행복권에서 확인
                     </a>
-                    <span class="text-secondary small d-block mt-1">
-                        → 로컬 파일(file://)에서는 CORS 제한으로 자동 로드가 어렵습니다.<br>
-                        → <strong>GitHub Pages 배포 후</strong> 테스트하거나, 수동으로 번호를 입력해주세요.
-                    </span>
-                `;
-                statusEl.innerHTML = `
-                    <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> ${latestDrwNo}회차 자동 로드 실패</span>
-                    <a href="${searchUrl}" target="_blank" class="text-decoration-none text-info small ms-2">
-                        <i class="bi bi-box-arrow-up-right"></i> 네이버에서 확인
-                    </a>
-                    <span class="text-secondary small d-block mt-1">→ 수동으로 번호를 입력해주세요 (복사-붙여넣기 가능)</span>
+                    <span class="text-secondary small d-block mt-1">→ 번호를 직접 입력해주세요 (복사-붙여넣기 가능)</span>
                 `;
                 inputEl.placeholder = '예: 1, 2, 3, 4, 5, 6';
                 inputEl.disabled = false;
@@ -693,22 +629,24 @@
             }
         }
 
-        // --- 로또 번호 생성 및 필터링 로직 ---
-        const DEBUG_MODE = true;
-
-        const OPTIMIZED_PARAMS = {
-            SUM_MIN: 80,
-            SUM_MAX: 200,
+        // --- 로또 번호 생성 및 필터링 로직 (Python 버전과 동일한 파라미터) ---
+        const PARAMS = {
+            SUM_MIN: 120,
+            SUM_MAX: 160,
             RANGE_MIN: 20,
-            AC_MIN: 6,
-            ODD_RANGES: [1, 2, 3, 4, 5],
-            MIN_QUADS: 2,
-            MIN_COLORS: 2,
-            MIN_PRIMES: 0,
-            MAX_PRIMES: 4,
+            AC_MIN: 8,
+            ODD_MIN: 2,
+            ODD_MAX: 4,
+            MIN_QUADS: 3,
+            MIN_PRIMES: 1,
+            MAX_PRIMES: 3,
+            MIN_MULT3: 1,
+            MAX_MULT3: 3,
+            CARRY_OVER_MAX: 1,
         };
 
         const PRIMES = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43]);
+        const MAX_ATTEMPTS = 1_000_000;
 
         function getAcValue(numbers) {
             const diffs = new Set();
@@ -720,34 +658,46 @@
             return diffs.size - 5;
         }
 
-        function checkFiltersFinal(nums) {
+        function parseLastWeekNums() {
+            const raw = document.getElementById('lastWeekNums').value.trim();
+            if (!raw) return null;
+            const parsed = raw.replace(/,/g, ' ').split(/\s+/).map(Number).filter(n => !isNaN(n) && n >= 1 && n <= 45);
+            return parsed.length === 6 ? parsed : null;
+        }
+
+        function checkFiltersFinal(nums, lastWeekNums) {
+            // 합계
             const totalSum = nums.reduce((a, b) => a + b, 0);
-            if (totalSum < OPTIMIZED_PARAMS.SUM_MIN || totalSum > OPTIMIZED_PARAMS.SUM_MAX) return false;
+            if (totalSum < PARAMS.SUM_MIN || totalSum > PARAMS.SUM_MAX) return false;
 
-            const range = nums[5] - nums[0];
-            if (range < OPTIMIZED_PARAMS.RANGE_MIN) return false;
+            // 고저차
+            if (nums[5] - nums[0] < PARAMS.RANGE_MIN) return false;
 
+            // 홀짝
             const oddCount = nums.filter(n => n % 2 !== 0).length;
-            if (!OPTIMIZED_PARAMS.ODD_RANGES.includes(oddCount)) return false;
+            if (oddCount < PARAMS.ODD_MIN || oddCount > PARAMS.ODD_MAX) return false;
 
-            const acValue = getAcValue(nums);
-            if (acValue < OPTIMIZED_PARAMS.AC_MIN) return false;
+            // AC값
+            if (getAcValue(nums) < PARAMS.AC_MIN) return false;
 
+            // 소수 개수
             const primeCount = nums.filter(n => PRIMES.has(n)).length;
-            if (primeCount < OPTIMIZED_PARAMS.MIN_PRIMES || primeCount > OPTIMIZED_PARAMS.MAX_PRIMES) return false;
+            if (primeCount < PARAMS.MIN_PRIMES || primeCount > PARAMS.MAX_PRIMES) return false;
 
-            const qCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
-            nums.forEach(n => {
-                if (n <= 11) qCounts[1] = 1;
-                else if (n <= 22) qCounts[2] = 1;
-                else if (n <= 33) qCounts[3] = 1;
-                else qCounts[4] = 1;
-            });
-            const quadrantSum = Object.values(qCounts).reduce((a, b) => a + b, 0);
-            if (quadrantSum < OPTIMIZED_PARAMS.MIN_QUADS) return false;
+            // 3의 배수 개수
+            const mult3Count = nums.filter(n => n % 3 === 0).length;
+            if (mult3Count < PARAMS.MIN_MULT3 || mult3Count > PARAMS.MAX_MULT3) return false;
 
-            const colors = new Set(nums.map(n => Math.floor((n - 1) / 10)));
-            if (colors.size < OPTIMIZED_PARAMS.MIN_COLORS) return false;
+            // 4구역 분포 (1-11, 12-22, 23-33, 34-45)
+            const quads = new Set(nums.map(n => Math.floor((n - 1) / 11)));
+            if (quads.size < PARAMS.MIN_QUADS) return false;
+
+            // 이월수 (지난주 번호와 겹치는 개수)
+            if (lastWeekNums) {
+                const lastSet = new Set(lastWeekNums);
+                const overlap = nums.filter(n => lastSet.has(n)).length;
+                if (overlap > PARAMS.CARRY_OVER_MAX) return false;
+            }
 
             return true;
         }
@@ -757,20 +707,19 @@
             const resultsContainer = document.getElementById('results-container');
             const resultsList = document.getElementById('results-list');
             const count = parseInt(document.getElementById('numSets').value, 10);
+            const lastWeekNums = parseLastWeekNums();
 
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 분석 중...';
 
-            // Clear previous
             resultsList.innerHTML = '';
             resultsContainer.style.display = 'block';
 
             setTimeout(() => {
                 const results = [];
-                const maxAttempts = 5000000;
                 let attempts = 0;
 
-                while (results.length < count && attempts < maxAttempts) {
+                while (results.length < count && attempts < MAX_ATTEMPTS) {
                     attempts++;
                     const nums = new Set();
                     while (nums.size < 6) {
@@ -778,30 +727,34 @@
                     }
                     const sortedNums = Array.from(nums).sort((a, b) => a - b);
 
-                    if (checkFiltersFinal(sortedNums)) {
-                        results.push({ nums: sortedNums, sum: sortedNums.reduce((a, b) => a + b, 0) });
+                    if (checkFiltersFinal(sortedNums, lastWeekNums)) {
+                        results.push({
+                            nums: sortedNums,
+                            sum: sortedNums.reduce((a, b) => a + b, 0),
+                            overlap: lastWeekNums ? sortedNums.filter(n => new Set(lastWeekNums).has(n)).length : null
+                        });
                     }
                 }
 
-                displayResults(results, attempts);
+                displayResults(results, attempts, lastWeekNums);
 
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> 다시 생성하기';
 
-                if (attempts >= maxAttempts) {
-                    alert("생성 시도 횟수 초과. 일부 조건에 맞는 번호만 표시됩니다.");
+                if (attempts >= MAX_ATTEMPTS && results.length < count) {
+                    alert(`${MAX_ATTEMPTS.toLocaleString()}회 시도 초과 — 조건에 맞는 번호를 충분히 찾지 못했습니다.`);
                 }
 
-            }, 100); // UI update delay
+            }, 100);
         }
 
-        function displayResults(results, attempts) {
+        function displayResults(results, attempts, lastWeekNums) {
             const resultsList = document.getElementById('results-list');
             const attemptBadge = document.getElementById('attempt-badge');
             const analysisInfo = document.getElementById('analysis-info');
 
             attemptBadge.textContent = `${attempts.toLocaleString()}번 시뮬레이션`;
-            analysisInfo.innerHTML = `검증 필터: 합계(${OPTIMIZED_PARAMS.SUM_MIN}~${OPTIMIZED_PARAMS.SUM_MAX}), AC값, 고저차, 색상균형 등 적용됨`;
+            analysisInfo.innerHTML = `적용 필터: 합계(${PARAMS.SUM_MIN}~${PARAMS.SUM_MAX}), 고저차(${PARAMS.RANGE_MIN}↑), AC값(${PARAMS.AC_MIN}↑), 홀수(${PARAMS.ODD_MIN}~${PARAMS.ODD_MAX}개), 소수(${PARAMS.MIN_PRIMES}~${PARAMS.MAX_PRIMES}개), 4구역(${PARAMS.MIN_QUADS}개↑), 이월수(최대 ${PARAMS.CARRY_OVER_MAX}개)`;
 
             if (results.length === 0) {
                 resultsList.innerHTML = '<div class="alert alert-warning">조건에 맞는 번호를 찾지 못했습니다.</div>';
@@ -818,18 +771,19 @@
                     else if (n <= 20) colorClass = 'ball-20';
                     else if (n <= 30) colorClass = 'ball-30';
                     else if (n <= 40) colorClass = 'ball-40';
-
-                    return `<span class="lotto-ball ${colorClass}">${n}</span>`
+                    return `<span class="lotto-ball ${colorClass}">${n}</span>`;
                 }).join('');
+
+                const statsHtml = result.overlap !== null
+                    ? `합계: ${result.sum} | 이월: ${result.overlap}개`
+                    : `합계: ${result.sum}`;
 
                 resultItem.innerHTML = `
                     <div class="d-flex align-items-center flex-wrap gap-2">
                         <span class="badge bg-secondary me-2">#${index + 1}</span>
                         ${numsHtml}
                     </div>
-                    <div class="result-stats d-none d-md-block">
-                        합계: ${result.sum}
-                    </div>
+                    <div class="result-stats d-none d-md-block">${statsHtml}</div>
                 `;
                 resultsList.appendChild(resultItem);
             });
