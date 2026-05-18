@@ -631,10 +631,10 @@
 
         // --- 로또 번호 생성 및 필터링 로직 (Python 버전과 동일한 파라미터) ---
         const PARAMS = {
-            SUM_MIN: 120,
-            SUM_MAX: 160,
+            SUM_MIN: 100,
+            SUM_MAX: 180,
             RANGE_MIN: 20,
-            AC_MIN: 8,
+            AC_MIN: 7,
             ODD_MIN: 2,
             ODD_MAX: 4,
             MIN_QUADS: 3,
@@ -642,7 +642,7 @@
             MAX_PRIMES: 3,
             MIN_MULT3: 1,
             MAX_MULT3: 3,
-            CARRY_OVER_MAX: 1,
+            CARRY_OVER_MAX: 2,
         };
 
         const PRIMES = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43]);
