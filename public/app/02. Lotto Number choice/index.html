@@ -643,10 +643,22 @@
             MIN_MULT3: 1,
             MAX_MULT3: 3,
             CARRY_OVER_MAX: 2,
+            // 용지 위치 기반 필터
+            ROW_COVER_MIN: 3,
+            ROW_COVER_MAX: 6,
+            COL_COVER_MIN: 3,
+            COL_COVER_MAX: 6,
+            MAX_IN_ONE_ROW: 3,
+            ROW_SPREAD_MIN: 4,
+            ADJ_PAIRS_MAX: 3,
         };
 
         const PRIMES = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43]);
         const MAX_ATTEMPTS = 1_000_000;
+
+        // 용지 행/열 계산 (7열 × 7행 그리드)
+        function getRow(n) { return Math.floor((n - 1) / 7) + 1; }
+        function getCol(n) { return ((n - 1) % 7) + 1; }
 
         function getAcValue(numbers) {
             const diffs = new Set();
@@ -656,6 +668,19 @@
                 }
             }
             return diffs.size - 5;
+        }
+
+        function countAdjacentPairs(nums) {
+            const ns = new Set(nums);
+            let count = 0;
+            for (const n of ns) {
+                const r = getRow(n), c = getCol(n);
+                if (c > 1 && ns.has(n - 1)) count++;
+                if (c < 7 && ns.has(n + 1)) count++;
+                if (r > 1 && ns.has(n - 7)) count++;
+                if (r < 7 && n + 7 <= 45 && ns.has(n + 7)) count++;
+            }
+            return count / 2;
         }
 
         function parseLastWeekNums() {
@@ -699,6 +724,26 @@
                 if (overlap > PARAMS.CARRY_OVER_MAX) return false;
             }
 
+            // 용지 위치 기반 필터
+            const rows = nums.map(getRow);
+            const cols = nums.map(getCol);
+            const rowSet = new Set(rows);
+            const colSet = new Set(cols);
+
+            // 커버 행/열 수
+            if (rowSet.size < PARAMS.ROW_COVER_MIN || rowSet.size > PARAMS.ROW_COVER_MAX) return false;
+            if (colSet.size < PARAMS.COL_COVER_MIN || colSet.size > PARAMS.COL_COVER_MAX) return false;
+
+            // 한 행 최대 집중
+            const maxInRow = Math.max(...[1,2,3,4,5,6,7].map(r => rows.filter(x => x === r).length));
+            if (maxInRow > PARAMS.MAX_IN_ONE_ROW) return false;
+
+            // 행 스프레드
+            if (Math.max(...rows) - Math.min(...rows) < PARAMS.ROW_SPREAD_MIN) return false;
+
+            // 인접 쌍
+            if (countAdjacentPairs(nums) > PARAMS.ADJ_PAIRS_MAX) return false;
+
             return true;
         }
 
@@ -728,10 +773,13 @@
                     const sortedNums = Array.from(nums).sort((a, b) => a - b);
 
                     if (checkFiltersFinal(sortedNums, lastWeekNums)) {
+                        const lastSet = lastWeekNums ? new Set(lastWeekNums) : new Set();
                         results.push({
                             nums: sortedNums,
                             sum: sortedNums.reduce((a, b) => a + b, 0),
-                            overlap: lastWeekNums ? sortedNums.filter(n => new Set(lastWeekNums).has(n)).length : null
+                            overlap: lastWeekNums ? sortedNums.filter(n => lastSet.has(n)).length : null,
+                            rowsCovered: new Set(sortedNums.map(getRow)).size,
+                            adjPairs: countAdjacentPairs(sortedNums),
                         });
                     }
                 }
@@ -754,7 +802,10 @@
             const analysisInfo = document.getElementById('analysis-info');
 
             attemptBadge.textContent = `${attempts.toLocaleString()}번 시뮬레이션`;
-            analysisInfo.innerHTML = `적용 필터: 합계(${PARAMS.SUM_MIN}~${PARAMS.SUM_MAX}), 고저차(${PARAMS.RANGE_MIN}↑), AC값(${PARAMS.AC_MIN}↑), 홀수(${PARAMS.ODD_MIN}~${PARAMS.ODD_MAX}개), 소수(${PARAMS.MIN_PRIMES}~${PARAMS.MAX_PRIMES}개), 4구역(${PARAMS.MIN_QUADS}개↑), 이월수(최대 ${PARAMS.CARRY_OVER_MAX}개)`;
+            analysisInfo.innerHTML = `
+                기본: 합계(${PARAMS.SUM_MIN}~${PARAMS.SUM_MAX}) · AC(${PARAMS.AC_MIN}↑) · 홀수(${PARAMS.ODD_MIN}~${PARAMS.ODD_MAX}) · 소수(${PARAMS.MIN_PRIMES}~${PARAMS.MAX_PRIMES}) · 이월(≤${PARAMS.CARRY_OVER_MAX})<br>
+                용지: 행(${PARAMS.ROW_COVER_MIN}~${PARAMS.ROW_COVER_MAX}개) · 열(${PARAMS.COL_COVER_MIN}~${PARAMS.COL_COVER_MAX}개) · 행집중(≤${PARAMS.MAX_IN_ONE_ROW}) · 행스프레드(${PARAMS.ROW_SPREAD_MIN}↑) · 인접(≤${PARAMS.ADJ_PAIRS_MAX}쌍)
+            `;
 
             if (results.length === 0) {
                 resultsList.innerHTML = '<div class="alert alert-warning">조건에 맞는 번호를 찾지 못했습니다.</div>';
@@ -774,16 +825,17 @@
                     return `<span class="lotto-ball ${colorClass}">${n}</span>`;
                 }).join('');
 
-                const statsHtml = result.overlap !== null
-                    ? `합계: ${result.sum} | 이월: ${result.overlap}개`
-                    : `합계: ${result.sum}`;
+                const parts = [`합계: ${result.sum}`];
+                if (result.overlap !== null) parts.push(`이월: ${result.overlap}개`);
+                parts.push(`행: ${result.rowsCovered}개`);
+                parts.push(`인접: ${result.adjPairs}쌍`);
 
                 resultItem.innerHTML = `
                     <div class="d-flex align-items-center flex-wrap gap-2">
                         <span class="badge bg-secondary me-2">#${index + 1}</span>
                         ${numsHtml}
                     </div>
-                    <div class="result-stats d-none d-md-block">${statsHtml}</div>
+                    <div class="result-stats d-none d-md-block">${parts.join(' | ')}</div>
                 `;
                 resultsList.appendChild(resultItem);
             });
